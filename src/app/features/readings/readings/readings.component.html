@@ -1,0 +1,181 @@
+<section class="readings-page">
+  <div class="page-header">
+    <h1>{{ t('NAV_READINGS') }}</h1>
+  </div>
+
+  <mat-card class="period-card compact">
+    <form class="period-form" [formGroup]="periodForm" (ngSubmit)="loadData()">
+      <mat-form-field appearance="outline" class="period-select">
+        <mat-label>{{ t('PERIOD') }}</mat-label>
+
+        <mat-select formControlName="period" (selectionChange)="onPeriodChange()">
+          @for (period of periodOptions; track period.value) {
+            <mat-option [value]="period.value">
+              {{ period.label }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit">
+        {{ t('COMMON_LOAD') }}
+      </button>
+    </form>
+  </mat-card>
+
+  @if (errorMessage) {
+    <mat-card class="error-card">
+      {{ errorMessage }}
+    </mat-card>
+  }
+
+  @if (successMessage) {
+    <mat-card class="success-card">
+      {{ successMessage }}
+    </mat-card>
+  }
+
+  <mat-card class="submit-card">
+    <h2>{{ t('READINGS_SUBMIT_TITLE') }}</h2>
+
+    @if (loading) {
+      <div class="loading">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    } @else if (meters.length === 0) {
+      <p class="empty">{{ t('READINGS_NO_METERS') }}</p>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div formArrayName="readings" class="readings-list">
+          @for (meter of meters; track meter.meterId; let i = $index) {
+            <div class="reading-item" [formGroupName]="i">
+              <div class="reading-header">
+                <div class="entity-main">
+                  <span class="entity-icon" [class.fixed]="meter.billingType === 'FIXED'">
+                    <mat-icon>
+                      {{ getServiceIcon({
+                                          serviceName: meter.serviceName,
+                                          billingType: meter.billingType}) }}
+                    </mat-icon>
+                  </span>
+
+                  <div>
+                    <strong>{{ meter.serviceName }}</strong>
+
+                    @if (meter.billingType === 'METERED') {
+                      <p>
+                        {{ t('PREVIOUS_VALUE') }}:
+                        {{ meter.previousValue ?? 0 }} {{ meter.serviceUnit }}
+                      </p>
+                      <p>
+                        {{ t('TARIFF_CURRENT') }}:
+                        {{ meter.currentTariffRate }} / {{ meter.serviceUnit }}
+                      </p>
+                    } @else {
+                      <p>
+                        {{ t('FIXED_TARIFF') }}:
+                        {{ meter.currentTariffRate }} {{ t('CURRENCY_UAH') }}
+                      </p>
+                      <p>
+                        {{ t('FIXED_WILL_BE_ADDED') }} {{ getSelectedPeriodLabel() }}
+                      </p>
+                    }
+                  </div>
+                </div>
+
+                @if (meter.alreadySubmitted && meter.billingType === 'METERED') {
+                  <span class="submitted-badge">
+                    {{ t('READING_ALREADY_SUBMITTED') }}
+                  </span>
+                }
+
+                @if (meter.billingType === 'FIXED') {
+                  <span class="fixed-badge">
+                    {{ t('BILLING_FIXED') }}
+                  </span>
+                }
+              </div>
+
+              @if (meter.billingType === 'METERED') {
+                <div class="reading-inputs">
+                  <mat-form-field appearance="outline">
+                    <mat-label>{{ t('CURRENT_VALUE') }}</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="value"
+                      (input)="onValueChange(i)"
+                    >
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>{{ t('CONSUMPTION') }}</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="consumption"
+                      (input)="onConsumptionChange(i)"
+                    >
+                  </mat-form-field>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="saving">
+            {{ saving ? t('COMMON_SAVING') : t('READINGS_SUBMIT') }}
+          </button>
+        </div>
+      </form>
+    }
+  </mat-card>
+
+  @if (submitResult) {
+    <mat-card class="submit-result-card">
+      <h2>{{ t('READINGS_SUBMIT_RESULT') }}</h2>
+
+      <p>
+        {{ t('READINGS_SAVED_COUNT') }}:
+        {{ submitResult.readings.length }}
+      </p>
+
+      <p>
+        {{ t('BILLS_GENERATED_COUNT') }}:
+        {{ submitResult.bills.length }}
+      </p>
+
+      <p>
+        {{ t('BILLS_TOTAL_AMOUNT') }}:
+        {{ getSubmitTotalAmount() }} грн
+      </p>
+    </mat-card>
+  }
+
+  <mat-card class="history-card">
+    <h2>{{ t('READINGS_HISTORY') }}</h2>
+
+    @if (history.length === 0) {
+      <p class="empty">{{ t('READINGS_HISTORY_EMPTY') }}</p>
+    } @else {
+      <div class="history-list">
+        @for (reading of history; track reading.id) {
+          <div class="history-item">
+            <div>
+              <strong>{{ reading.serviceName }}</strong>
+              <p>
+                {{ reading.periodMonth }}/{{ reading.periodYear }}
+                · {{ reading.consumption }} {{ reading.serviceUnit }}
+              </p>
+            </div>
+
+            <strong>
+              {{ reading.value }} {{ reading.serviceUnit }}
+            </strong>
+          </div>
+        }
+      </div>
+    }
+  </mat-card>
+</section>

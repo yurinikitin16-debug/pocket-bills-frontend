@@ -1,0 +1,275 @@
+.bills-page {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.page-header {
+  max-width: 1180px;
+  margin: 0 auto 24px;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+  }
+}
+
+.error-card,
+.bills-card {
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.error-card {
+  margin-bottom: 24px;
+  color: #dc2626;
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: 1180px;
+  margin: 0 auto 20px;
+
+  mat-form-field {
+    width: 220px;
+  }
+}
+
+.bills-card {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+.empty {
+  margin: 0;
+  color: #6b7280;
+}
+
+.period-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.period-item {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.period-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  padding: 20px 24px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+
+.period-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+
+  mat-icon {
+    flex: 0 0 auto;
+    color: #64748b;
+  }
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    gap: 48px;
+    min-width: 0;
+  }
+
+  strong {
+    display: block;
+    min-width: 130px;
+  }
+
+  span {
+    color: #9ca3af;
+    white-space: nowrap;
+  }
+}
+
+
+
+.period-total {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  white-space: nowrap;
+
+  mat-icon {
+    color: #64748b;
+  }
+}
+
+.bill-list {
+  padding: 0 24px 20px 82px;
+}
+
+.bill-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0;
+  border-top: 1px solid #eef2f7;
+}
+
+.bill-service {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+
+  strong {
+    display: block;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+  }
+}
+
+.service-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: #2563eb;
+  background: #eff6ff;
+
+  &.fixed {
+    color: #4f46e5;
+    background: #eef2ff;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.amount-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bill-amount {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .filters-row {
+    flex-direction: column;
+
+    mat-form-field {
+      width: 100%;
+    }
+  }
+
+  .bills-card {
+    padding: 16px;
+  }
+
+  .period-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 18px 20px;
+  }
+
+  .period-title {
+    align-items: flex-start;
+
+    > div {
+      display: block;
+      min-width: 0;
+    }
+
+    strong {
+      min-width: 0;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    span {
+      display: block;
+    }
+  }
+
+  .period-total {
+    display: grid;
+    grid-template-columns: auto;
+    justify-items: end;
+    gap: 4px;
+
+    strong {
+      white-space: nowrap;
+    }
+
+    mat-icon {
+      color: #64748b;
+    }
+  }
+
+  .bill-list {
+    padding: 0 20px 18px;
+  }
+
+  .bill-row {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .bill-row > .bill-amount {
+    margin-left: 46px;
+  }
+}

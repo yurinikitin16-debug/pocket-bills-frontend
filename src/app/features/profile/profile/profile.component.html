@@ -1,0 +1,112 @@
+<section class="profile-page">
+  <div class="page-header">
+    <h1>{{ t('NAV_PROFILE') }}</h1>
+
+    @if (!editMode && user) {
+      <button mat-flat-button color="primary" type="button" (click)="startEdit()">
+        <mat-icon>edit</mat-icon>
+        {{ t('PROFILE_EDIT') }}
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="loading">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  } @else if (errorMessage && !editMode) {
+    <mat-card class="profile-card error">
+      {{ errorMessage }}
+    </mat-card>
+  } @else {
+    <mat-card class="profile-card">
+      <div class="avatar">
+        <mat-icon>person</mat-icon>
+      </div>
+
+      @if (!editMode) {
+        <div class="info">
+          <div class="row">
+            <span>{{ t('PROFILE_FULL_NAME') }}</span>
+            <strong>{{ user?.fullName || '—' }}</strong>
+          </div>
+
+          <div class="row">
+            <span>Email</span>
+            <strong>{{ user?.email || '—' }}</strong>
+          </div>
+
+          <div class="row">
+            <span>{{ t('PROFILE_PHONE') }}</span>
+            <strong>{{ user?.phone || '—' }}</strong>
+          </div>
+
+          <div class="row">
+            <span>{{ t('PROFILE_LANGUAGE') }}</span>
+            <strong>
+              @switch (user?.lang) {
+                @case ('UK') { 🇺🇦 }
+                @case ('EN') { 🇬🇧 }
+              }
+            </strong>
+          </div>
+
+          <div class="row">
+            <span>{{ t('PROFILE_STATUS') }}</span>
+            <strong>{{ user?.enabled ? t('STATUS_ACTIVE') : t('STATUS_DISABLED') }}</strong>
+          </div>
+        </div>
+      } @else {
+        <form class="profile-form" [formGroup]="form" (ngSubmit)="save()">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ t('PROFILE_FULL_NAME') }}</mat-label>
+            <input matInput formControlName="fullName">
+
+            @if (form.controls.fullName.hasError('maxlength')) {
+              <mat-error>{{ t('FULL_NAME_TOO_LONG') }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ t('PROFILE_PHONE') }}</mat-label>
+            <input matInput formControlName="phone">
+
+            @if (form.controls.phone.hasError('maxlength')) {
+              <mat-error>{{ t('PHONE_TOO_LONG') }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ t('PROFILE_LANGUAGE') }}</mat-label>
+            <mat-select formControlName="lang">
+              <mat-option value="UK">Українська</mat-option>
+              <mat-option value="EN">English</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          @if (errorMessage) {
+            <div class="error-message">{{ errorMessage }}</div>
+          }
+
+          <div class="actions">
+            <button mat-button type="button" (click)="cancelEdit()" [disabled]="saving">
+              {{ t('COMMON_CANCEL') }}
+            </button>
+
+            <button mat-flat-button color="primary" type="submit" [disabled]="saving">
+              {{ saving ? t('COMMON_SAVING') : t('COMMON_SAVE') }}
+            </button>
+          </div>
+        </form>
+      }
+    </mat-card>
+  }
+
+  <div class="logout-section">
+    <button mat-button class="logout-button" type="button" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      {{ t('LOGOUT') }}
+    </button>
+  </div>
+</section>
+

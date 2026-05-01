@@ -1,0 +1,56 @@
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #f5f7ff;
+  padding: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
+  border-radius: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #3f51e8;
+  font-weight: 700;
+  margin-bottom: 48px;
+
+  mat-icon {
+    background: #3f51e8;
+    color: white;
+    border-radius: 8px;
+    padding: 4px;
+  }
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+p {
+  margin: 0 0 32px;
+  color: #6b7280;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.submit-button {
+  height: 48px;
+  border-radius: 10px;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 14px;
+}

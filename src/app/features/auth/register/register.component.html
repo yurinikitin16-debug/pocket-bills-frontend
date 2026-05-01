@@ -1,0 +1,86 @@
+<div class="auth-page">
+  <mat-card class="auth-card">
+    <div class="brand">
+      <mat-icon>receipt_long</mat-icon>
+      <span>PocketBills</span>
+    </div>
+
+    <h1>Реєстрація</h1>
+    <p>Створіть акаунт, щоб керувати комунальними рахунками</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autofocus>
+
+        @if (form.controls.email.hasError('required')) {
+          <mat-error>Email is required</mat-error>
+        }
+
+        @if (form.controls.email.hasError('email')) {
+          <mat-error>Enter a valid email</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Повне імʼя</mat-label>
+        <input matInput formControlName="fullName">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Телефон</mat-label>
+        <input matInput formControlName="phone">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Пароль</mat-label>
+        <input
+          matInput
+          [type]="hidePassword ? 'password' : 'text'"
+          formControlName="password"
+          (keydown.enter)="submit(); $event.preventDefault()"
+        >
+
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hidePassword = !hidePassword"
+        >
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+
+        @if (form.controls.password.hasError('required')) {
+          <mat-error>Password is required</mat-error>
+        }
+
+        @if (form.controls.password.hasError('minlength')) {
+          <mat-error>Password must be at least 8 characters</mat-error>
+        }
+      </mat-form-field>
+
+      @if (errorMessage) {
+        <div class="error-message">{{ errorMessage }}</div>
+      }
+
+      <button
+        mat-flat-button
+        color="primary"
+        class="submit-button"
+        type="submit"
+        [disabled]="loading"
+      >
+        @if (loading) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          Зареєструватися
+        }
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      Вже маєте акаунт?
+      <a routerLink="/login">Увійти</a>
+    </p>
+  </mat-card>
+</div>

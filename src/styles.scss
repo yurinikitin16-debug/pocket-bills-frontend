@@ -1,1 +1,128 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, Arial, sans-serif;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #f5f7ff;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  border-radius: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #3f51e8;
+  font-weight: 700;
+  margin-bottom: 40px;
+
+  mat-icon {
+    background: #3f51e8;
+    color: white;
+    border-radius: 8px;
+    padding: 4px;
+  }
+}
+
+.auth-card h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.auth-card p {
+  margin: 0 0 28px;
+  color: #6b7280;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.submit-button {
+  height: 48px;
+  border-radius: 10px;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 14px;
+}
+
+.auth-switch {
+  margin-top: 24px !important;
+  text-align: center;
+
+  a {
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+.entity-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+  }
+}
+
+.entity-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: #2563eb;
+  background: #eff6ff;
+
+  &.fixed {
+    color: #4f46e5;
+    background: #eef2ff;
+  }
+
+  mat-icon {
+    width: 19px;
+    height: 19px;
+    font-size: 19px;
+  }
+}
+

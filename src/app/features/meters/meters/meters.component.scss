@@ -1,0 +1,289 @@
+.meters-page {
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+  }
+}
+
+.content-grid,
+.meters-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.list-card {
+  width: 100%;
+}
+
+.form-card {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.main-meter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  > mat-form-field {
+    width: 100%;
+    max-width: 424px;
+  }
+}
+
+.form-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+
+  h3 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.tariffs-section,
+.initial-reading-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.list-card,
+.form-card,
+.error-card {
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.form-card {
+  width: 100%;
+  max-width: 720px;
+}
+
+.error-card {
+  margin-bottom: 24px;
+  color: #dc2626;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+.empty {
+  color: #6b7280;
+}
+
+.meter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.meter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0 0 8px;
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  &.inactive {
+    opacity: 0.65;
+  }
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.danger {
+  color: #dc2626;
+}
+
+.status {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+
+  &.active {
+    background: #ecfdf5;
+    color: #047857;
+  }
+}
+
+.main-meter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section,
+.tariffs-section,
+.initial-reading-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.hint {
+  margin: 0 0 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.tariff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tariff-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  &.active {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+  }
+}
+
+.active-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #d1fae5;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tariff-form,
+.initial-reading-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+
+  button {
+    height: 56px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 900px) {
+  .form-card {
+    max-width: 100%;
+  }
+
+  .tariff-form,
+  .initial-reading-form {
+    grid-template-columns: 1fr;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .meter-item,
+  .tariff-item {
+    align-items: flex-start;
+  }
+
+  .form-section {
+    grid-template-columns: 1fr;
+  }
+
+  .main-meter-form > mat-form-field {
+    max-width: 100%;
+  }
+}

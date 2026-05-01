@@ -1,0 +1,181 @@
+<section class="dashboard-page">
+  <div class="page-header">
+    <h1>{{ t('NAV_DASHBOARD') }}</h1>
+  </div>
+
+  @if (errorMessage) {
+    <mat-card class="error-card">
+      {{ errorMessage }}
+    </mat-card>
+  }
+
+  @if (loading) {
+    <div class="loading">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  } @else if (!currentPeriod) {
+    <mat-card class="recent-card">
+      <p class="empty">{{ t('DASHBOARD_EMPTY') }}</p>
+    </mat-card>
+  } @else {
+    <div class="period-tabs">
+      @for (period of periods; track period.key) {
+        <button
+          type="button"
+          [class.active]="period.key === selectedPeriodKey"
+          (click)="selectPeriod(period)"
+        >
+          {{ period.title }}
+        </button>
+      }
+    </div>
+
+    <mat-card class="summary-card">
+      <div>
+        <span>{{ t('DASHBOARD_TOTAL_MONTH') }}</span>
+        <strong>{{ formatAmount(currentPeriod.total) }}</strong>
+      </div>
+
+      <div>
+        <span>{{ t('DASHBOARD_CURRENT_PERIOD') }}</span>
+        <strong>{{ formatAmount(currentPeriod.total) }}</strong>
+      </div>
+
+      <div>
+        <span>{{ t('DASHBOARD_PREVIOUS_PERIOD') }}</span>
+        <strong>{{ formatAmount(previousPeriod?.total ?? 0) }}</strong>
+      </div>
+
+      <div>
+        <span>{{ t('DASHBOARD_DIFFERENCE') }}</span>
+        <strong [class]="getChangeClass(getTotalDifference())">
+          {{ formatSignedAmount(getTotalDifference()) }}
+        </strong>
+
+        <small [class]="getChangeClass(getTotalDifference())">
+          {{ formatPercent(getTotalPercentDifference()) }}
+        </small>
+      </div>
+    </mat-card>
+
+    <mat-card class="details-card">
+      <h2>{{ t('DASHBOARD_SERVICE_DETAILS') }}</h2>
+
+      <div class="details-table">
+        <div class="details-header">
+          <span>{{ t('DASHBOARD_SERVICE') }}</span>
+          <span>{{ t('DASHBOARD_USED') }}</span>
+          <span>{{ t('DASHBOARD_AMOUNT') }}</span>
+          <span>{{ t('DASHBOARD_PREVIOUS') }}</span>
+          <span>{{ t('DASHBOARD_DIFFERENCE') }}</span>
+        </div>
+
+        @for (row of details; track row.serviceId) {
+          <div class="details-row">
+            <div class="entity-main">
+              <span class="entity-icon" [class.fixed]="row.billingType === 'FIXED'">
+                <mat-icon>
+                  {{ getServiceIcon({ serviceName: row.serviceName, billingType: row.billingType }) }}
+                </mat-icon>
+              </span>
+
+              <strong>{{ row.serviceName }}</strong>
+            </div>
+
+            <span>{{ formatConsumption(row) }}</span>
+
+            <strong>{{ formatAmount(row.amount) }}</strong>
+
+            <span>{{ formatPrevious(row) }}</span>
+
+            <strong [class]="getChangeClass(row.difference)">
+              {{ formatSignedAmount(row.difference) }}
+            </strong>
+          </div>
+        }
+      </div>
+    </mat-card>
+
+    <mat-card class="comparison-card">
+      <h2>{{ t('DASHBOARD_PREVIOUS_PERIOD') }}</h2>
+
+      <div class="comparison-grid">
+        @for (row of details; track row.serviceId) {
+          <div class="comparison-item">
+            <span>{{ row.serviceName }}</span>
+
+            <strong [class]="getChangeClass(row.difference)">
+              {{ formatSignedAmount(row.difference) }}
+            </strong>
+
+            <small [class]="getChangeClass(row.difference)">
+              {{ formatPercent(row.percentDifference) }}
+            </small>
+          </div>
+        }
+      </div>
+    </mat-card>
+
+    <div class="charts-grid">
+      <mat-card class="chart-card wide">
+        <h2>{{ t('DASHBOARD_EXPENSES_DYNAMIC') }}</h2>
+
+        <div class="chart-box">
+          <canvas
+            baseChart
+            [data]="expensesChartData"
+            [options]="expensesChartOptions"
+            [type]="'line'"
+          ></canvas>
+        </div>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <h2>{{ t('DASHBOARD_SERVICE_EXPENSES') }}</h2>
+
+        <div class="chart-box">
+          <canvas
+            baseChart
+            [data]="servicesChartData"
+            [options]="servicesChartOptions"
+            [type]="'bar'"
+          ></canvas>
+        </div>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <h2>{{ t('DASHBOARD_CONSUMPTION_DYNAMIC') }}</h2>
+
+        <div class="chart-box">
+          <canvas
+            baseChart
+            [data]="consumptionChartData"
+            [options]="consumptionChartOptions"
+            [type]="'bar'"
+          ></canvas>
+        </div>
+      </mat-card>
+    </div>
+
+    <mat-card class="recent-card">
+      <h2>{{ t('DASHBOARD_RECENT_BILLS') }}</h2>
+
+      <div class="recent-list">
+        @for (period of recentPeriods; track period.key) {
+          <div class="recent-row">
+            <mat-icon>calendar_today</mat-icon>
+
+            <div>
+              <strong>{{ period.title }}</strong>
+              <span>{{ period.bills.length }} {{ t('NAV_BILLS') }}</span>
+            </div>
+
+            <strong class="amount-badge">
+              {{ formatAmount(period.total) }}
+            </strong>
+          </div>
+        }
+      </div>
+    </mat-card>
+  }
+</section>

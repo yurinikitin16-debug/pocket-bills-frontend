@@ -1,0 +1,247 @@
+<section class="meters-page">
+  <div class="page-header">
+    <h1>{{ t('NAV_METERS') }}</h1>
+
+    <button mat-flat-button color="primary" type="button" (click)="startCreate()">
+      <mat-icon>add</mat-icon>
+      {{ t('METER_ADD') }}
+    </button>
+  </div>
+
+  @if (errorMessage) {
+    <mat-card class="error-card">
+      {{ errorMessage }}
+    </mat-card>
+  }
+
+  <div class="content-grid">
+
+    <!-- LEFT: LIST -->
+    <mat-card class="list-card">
+      <h2>{{ t('METER_LIST') }}</h2>
+
+      @if (loading) {
+        <div class="loading">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      } @else if (meters.length === 0) {
+        <p class="empty">{{ t('METER_EMPTY') }}</p>
+      } @else {
+        <div class="meter-list">
+          @for (meter of meters; track meter.id) {
+            <div class="meter-item" [class.inactive]="!meter.isActive">
+              <div class="entity-main">
+                <span class="entity-icon">
+                  <mat-icon>
+                    {{ getServiceIcon({ serviceName: meter.serviceName }) }}
+                  </mat-icon>
+                </span>
+                <div>
+                  <strong>{{ meter.serviceName }}</strong>
+
+                  <span class="status" [class.active]="meter.isActive">
+      {{ meter.isActive ? t('STATUS_ACTIVE') : t('STATUS_DISABLED') }}
+    </span>
+                </div>
+              </div>
+
+              <div class="item-actions">
+                <button mat-icon-button (click)="startEdit(meter)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <button mat-icon-button class="danger" (click)="delete(meter)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </mat-card>
+
+    <!-- RIGHT: FORM -->
+    <mat-card class="form-card">
+      <h2>
+        {{ selectedMeter ? t('METER_EDIT') : t('METER_CREATE') }}
+      </h2>
+
+      <!-- MAIN FORM -->
+      <form class="main-meter-form" [formGroup]="form" (ngSubmit)="save()">
+
+        <!-- SERVICE -->
+        <mat-form-field appearance="outline">
+          <mat-label>{{ t('SERVICE_NAME') }}</mat-label>
+
+          <mat-select formControlName="serviceId">
+            <mat-option [value]="0">
+              {{ t('COMMON_SELECT') }}
+            </mat-option>
+
+            @for (service of services; track service.id) {
+              <mat-option [value]="service.id">
+                {{ service.name }}
+                @if (service.unit) {
+                  — {{ service.unit }}
+                }
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- INITIAL TARIFF (only create) -->
+        @if (!selectedMeter) {
+          <div class="form-section">
+            <h3>{{ t('TARIFF_INITIAL') }}</h3>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ t('TARIFF_RATE') }}</mat-label>
+              <input matInput type="number" formControlName="initialRate">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ t('DATE') }}</mat-label>
+              <input matInput type="date" formControlName="establishedDate">
+            </mat-form-field>
+          </div>
+        }
+
+        <!-- INITIAL READING (optional on create) -->
+        @if (!selectedMeter) {
+          <div class="form-section">
+            <h3>{{ t('INITIAL_READING_OPTIONAL') }}</h3>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ t('INITIAL_READING_VALUE') }}</mat-label>
+              <input matInput type="number" formControlName="initialReadingValue">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ t('PERIOD') }}</mat-label>
+
+              <mat-select formControlName="initialReadingPeriod">
+                @for (period of periodOptions; track period.value) {
+                  <mat-option [value]="period.value">
+                    {{ period.label }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        }
+
+        <!-- ACTIVE -->
+        @if (selectedMeter) {
+          <mat-checkbox formControlName="isActive">
+            {{ t('METER_ACTIVE') }}
+          </mat-checkbox>
+        }
+
+        <!-- ACTIONS -->
+        <div class="form-actions">
+          @if (selectedMeter) {
+            <button mat-button type="button" (click)="startCreate()">
+              {{ t('COMMON_CANCEL') }}
+            </button>
+          }
+
+          <button mat-flat-button color="primary" type="submit">
+            {{ t('COMMON_SAVE') }}
+          </button>
+        </div>
+      </form>
+
+      <!-- TARIFF HISTORY -->
+      @if (selectedMeter) {
+        <div class="tariff-section">
+          <h3>{{ t('TARIFF_HISTORY') }}</h3>
+
+          @if (tariffs.length === 0) {
+            <p class="empty">{{ t('TARIFF_EMPTY') }}</p>
+          } @else {
+            <div class="tariff-list">
+              @for (tariff of tariffs; track tariff.id) {
+                <div class="tariff-item" [class.active]="tariff.active">
+                  <div>
+                    <strong>
+                      {{ tariff.rate }} / {{ tariff.serviceUnit }}
+                    </strong>
+
+                    <p>
+                      {{ tariff.establishedDate }}
+                      @if (tariff.endDate) {
+                        — {{ tariff.endDate }}
+                      }
+                    </p>
+                  </div>
+
+                  @if (tariff.active) {
+                    <span class="active-badge">
+                      {{ t('CURRENT') }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <!-- ADD TARIFF -->
+          <form class="tariff-form" [formGroup]="tariffForm" (ngSubmit)="addTariff()">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ t('TARIFF_RATE') }}</mat-label>
+              <input matInput type="number" formControlName="rate">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ t('DATE') }}</mat-label>
+              <input matInput type="date" formControlName="establishedDate">
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" type="submit">
+              {{ t('TARIFF_ADD') }}
+            </button>
+          </form>
+        </div>
+      }
+
+      <!-- INITIAL READING (separate endpoint) -->
+      @if (selectedMeter) {
+        <div class="initial-reading-section">
+          <h3>{{ t('INITIAL_READING') }}</h3>
+
+          <p class="hint">
+            {{ t('INITIAL_READING_HINT') }}
+          </p>
+
+          <form
+            class="initial-reading-form"
+            [formGroup]="initialReadingForm"
+            (ngSubmit)="addInitialReading()"
+          >
+            <mat-form-field appearance="outline">
+              <mat-label>{{ t('INITIAL_READING_VALUE') }}</mat-label>
+              <input matInput type="number" formControlName="value">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ t('PERIOD') }}</mat-label>
+
+              <mat-select formControlName="period">
+                @for (period of periodOptions; track period.value) {
+                  <mat-option [value]="period.value">
+                    {{ period.label }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" type="submit">
+              {{ t('INITIAL_READING_ADD') }}
+            </button>
+          </form>
+        </div>
+      }
+
+    </mat-card>
+  </div>
+</section>

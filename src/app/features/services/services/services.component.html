@@ -1,0 +1,148 @@
+<section class="services-page">
+  <div class="page-header">
+    <h1>{{ t('NAV_SERVICES') }}</h1>
+
+    <button (click)="startCreate()" color="primary" mat-flat-button type="button">
+      <mat-icon>add</mat-icon>
+      {{ t('SERVICE_ADD') }}
+    </button>
+  </div>
+
+  <div class="services-layout">
+    <mat-card class="list-card">
+      <h2>{{ t('SERVICE_LIST') }}</h2>
+
+      @if (loading) {
+        <div class="loading">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      } @else if (services.length === 0) {
+        <p class="empty">{{ t('SERVICE_EMPTY') }}</p>
+      } @else {
+        <div class="service-list">
+          @for (service of services; track service.id) {
+            <div class="service-item">
+              <div class="entity-main">
+                <span class="entity-icon" [class.fixed]="service.billingType === 'FIXED'">
+                  <mat-icon>
+                    {{getServiceIcon({
+                                          serviceName: service.name,
+                                          serviceCode: service.code,
+                                          billingType: service.billingType}) }}
+                  </mat-icon>
+                </span>
+                <div>
+                  <strong>{{ service.name }}</strong>
+                  <p>
+                    {{ service.code }}
+
+                    @if (service.unit) {
+                      · {{ service.unit }}
+                    }
+
+                    · {{ service.billingType === 'METERED' ? t('BILLING_METERED') : t('BILLING_FIXED') }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="item-actions">
+                <button mat-icon-button type="button" (click)="startEdit(service)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="danger"
+                  (click)="delete(service)"
+                  [disabled]="deletingId === service.id"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </mat-card>
+
+    @if (errorMessage) {
+      <mat-card class="error-card">
+        {{ errorMessage }}
+      </mat-card>
+    }
+
+    <mat-card class="form-card">
+      <h2>
+        {{ selectedService ? t('SERVICE_EDIT') : t('SERVICE_CREATE') }}
+      </h2>
+
+      <form (ngSubmit)="save()" [formGroup]="form">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ t('SERVICE_CODE') }}</mat-label>
+          <input formControlName="code" matInput placeholder="ELECTRICITY">
+
+          @if (form.controls.code.hasError('required')) {
+            <mat-error>{{ t('SERVICE_CODE_REQUIRED') }}</mat-error>
+          }
+
+          @if (form.controls.code.hasError('maxlength')) {
+            <mat-error>{{ t('SERVICE_CODE_TOO_LONG') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ t('SERVICE_NAME') }}</mat-label>
+          <input formControlName="name" matInput placeholder="Електроенергія">
+
+          @if (form.controls.name.hasError('required')) {
+            <mat-error>{{ t('SERVICE_NAME_REQUIRED') }}</mat-error>
+          }
+
+          @if (form.controls.name.hasError('maxlength')) {
+            <mat-error>{{ t('SERVICE_NAME_TOO_LONG') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ t('SERVICE_UNIT') }}</mat-label>
+          <input formControlName="unit" matInput placeholder="кВт·год">
+
+          @if (form.controls.unit.hasError('maxlength')) {
+            <mat-error>{{ t('SERVICE_UNIT_TOO_LONG') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ t('SERVICE_BILLING_TYPE') }}</mat-label>
+
+          <mat-select formControlName="billingType">
+            <mat-option value="METERED">
+              {{ t('BILLING_METERED') }}
+            </mat-option>
+
+            <mat-option value="FIXED">
+              {{ t('BILLING_FIXED') }}
+            </mat-option>
+          </mat-select>
+
+          @if (form.controls.billingType.hasError('required')) {
+            <mat-error>{{ t('SERVICE_BILLING_TYPE_REQUIRED') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="form-actions">
+          @if (selectedService) {
+            <button mat-button type="button" (click)="startCreate()" [disabled]="saving">
+              {{ t('COMMON_CANCEL') }}
+            </button>
+          }
+
+          <button [disabled]="saving" color="primary" mat-flat-button type="submit">
+            {{ saving ? t('COMMON_SAVING') : t('COMMON_SAVE') }}
+          </button>
+        </div>
+      </form>
+    </mat-card>
+  </div>
+</section>

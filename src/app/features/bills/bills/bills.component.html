@@ -1,0 +1,124 @@
+<section class="bills-page">
+  <div class="page-header">
+    <h1>{{ t('NAV_BILLS') }}</h1>
+  </div>
+
+  @if (errorMessage) {
+    <mat-card class="error-card">
+      {{ errorMessage }}
+    </mat-card>
+  }
+
+  <div class="filters-row" [formGroup]="filterForm">
+    <mat-form-field appearance="outline">
+      <mat-icon matPrefix>calendar_month</mat-icon>
+      <mat-select formControlName="periodMonth" (selectionChange)="onFiltersChange()">
+        @for (period of periodOptions; track period.value) {
+          <mat-option [value]="period.value">
+            {{ period.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-icon matPrefix>event</mat-icon>
+      <mat-select formControlName="year" (selectionChange)="onFiltersChange()">
+        @for (year of yearOptions; track year) {
+          <mat-option [value]="year">
+            {{ year }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-icon matPrefix>receipt_long</mat-icon>
+      <mat-select formControlName="serviceId">
+        <mat-option [value]="0">
+          {{ t('BILLS_ALL_SERVICES') }}
+        </mat-option>
+
+        @for (service of serviceOptions; track service.id) {
+          <mat-option [value]="service.id">
+            {{ service.name }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <mat-card class="bills-card">
+    @if (loading) {
+      <div class="loading">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    } @else if (groups.length === 0) {
+      <p class="empty">{{ t('BILLS_EMPTY') }}</p>
+    } @else {
+      <div class="period-list">
+        @for (group of groups; track group.key) {
+          @if (getVisibleBills(group).length > 0) {
+            <div class="period-item" [class.expanded]="isExpanded(group)">
+              <button class="period-summary" type="button" (click)="toggleGroup(group)">
+                <div class="period-title">
+                  <mat-icon>calendar_today</mat-icon>
+
+                  <div>
+                    <strong>{{ group.title }}</strong>
+
+                    @if (group.calculatedAt) {
+                      <span>{{ formatDate(group.calculatedAt) }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="period-total">
+                  <strong class="amount-badge">{{ formatAmount(getVisibleTotal(group)) }}</strong>
+                  <mat-icon>
+                    {{ isExpanded(group) ? 'expand_less' : 'expand_more' }}
+                  </mat-icon>
+                </div>
+              </button>
+
+              @if (isExpanded(group)) {
+                <div class="bill-list">
+                  @for (bill of getVisibleBills(group); track bill.id) {
+                    <div class="bill-row">
+                      <div class="bill-service">
+                        <span class="service-icon" [class.fixed]="bill.billingType === 'FIXED'">
+                          <mat-icon>
+                            {{ getServiceIcon({
+                                                      serviceName: bill.serviceName,
+                                                      billingType: bill.billingType}) }}
+                          </mat-icon>
+                        </span>
+
+                        <div>
+                          <strong>{{ bill.serviceName }}</strong>
+
+                          @if (bill.billingType === 'METERED') {
+                            <p>
+                              {{ bill.consumption ?? 0 }} {{ bill.serviceUnit }}
+                              · {{ bill.tariffRate }} {{ t('CURRENCY_UAH') }}
+                            </p>
+                          } @else if (bill.billingType === 'FIXED') {
+                            <p>
+                              {{ t('BILL_FIXED_TARIFF') }} · {{ bill.tariffRate }} {{ t('CURRENCY_UAH') }}
+                            </p>
+                          }
+                        </div>
+                      </div>
+
+                      <strong class="bill-amount">{{ formatAmount(bill.amount) }}</strong>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  </mat-card>
+</section>
