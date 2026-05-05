@@ -25,6 +25,15 @@ interface BillPeriodGroup {
   bills: Bill[];
 }
 
+interface BillDisplayGroup {
+  key: string;
+  title: string;
+  billingType: Bill['billingType'];
+  isRegisterGroup: boolean;
+  total: number;
+  bills: Bill[];
+}
+
 @Component({
   selector: 'app-bills',
   standalone: true,
@@ -143,6 +152,59 @@ export class BillsComponent implements OnInit {
 
     return new Intl.DateTimeFormat('uk-UA').format(new Date(value));
   }
+
+  getBillDisplayName(bill: Bill): string {
+    if (bill.meterType === 'REGISTER') {
+      return bill.displayName || bill.registerCode || bill.serviceName;
+    }
+
+    return bill.displayName || bill.serviceName;
+  }
+
+  getBillDescription(bill: Bill): string {
+    if (bill.billingType === 'FIXED') {
+      return `${this.t('BILL_FIXED_TARIFF')} · ${bill.tariffRate} ${this.t('CURRENCY_UAH')}`;
+    }
+
+    const unit = bill.serviceUnit ? ` ${bill.serviceUnit}` : '';
+
+    return `${bill.consumption ?? 0}${unit} · ${bill.tariffRate} ${this.t('CURRENCY_UAH')}`;
+  }
+
+  getGroupedVisibleBills(group: BillPeriodGroup): BillDisplayGroup[] {
+    const bills = this.getVisibleBills(group);
+    const groups = new Map<string, BillDisplayGroup>();
+
+    bills.forEach((bill) => {
+      const isRegister = bill.meterType === 'REGISTER' && bill.parentMeterId !== null;
+
+      const key = isRegister
+        ? `parent-${bill.parentMeterId}`
+        : `bill-${bill.id}`;
+
+      const title = isRegister
+        ? bill.serviceName
+        : this.getBillDisplayName(bill);
+
+      const displayGroup = groups.get(key) ?? {
+        key,
+        title,
+        billingType: bill.billingType,
+        isRegisterGroup: isRegister,
+        total: 0,
+        bills: []
+      };
+
+      displayGroup.total += Number(bill.amount || 0);
+      displayGroup.bills.push(bill);
+
+      groups.set(key, displayGroup);
+    });
+
+    return Array.from(groups.values());
+  }
+
+
 
   private buildGroups(bills: Bill[]): BillPeriodGroup[] {
     const groupsByPeriod = new Map<string, Bill[]>();

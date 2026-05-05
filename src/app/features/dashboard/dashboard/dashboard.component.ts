@@ -26,6 +26,7 @@ interface DashboardPeriod {
 }
 
 interface ServiceComparisonRow {
+  key: string;
   serviceId: number;
   serviceName: string;
   serviceUnit?: string | null;
@@ -36,6 +37,9 @@ interface ServiceComparisonRow {
   previousConsumption: number | null;
   difference: number;
   percentDifference: number | null;
+  bills: Bill[];
+  previousBills: Bill[];
+  isRegisterGroup: boolean;
 }
 
 @Component({
@@ -230,7 +234,11 @@ export class DashboardComponent implements OnInit {
       return `1 ${this.t('DASHBOARD_SERVICE_UNIT')}`;
     }
 
-    return `${row.consumption ?? 0} ${row.serviceUnit ?? ''}`;
+    if (row.consumption === null) {
+      return '-';
+    }
+
+    return `${row.consumption} ${row.serviceUnit ?? ''}`;
   }
 
   formatPrevious(row: ServiceComparisonRow): string {
@@ -240,8 +248,13 @@ export class DashboardComponent implements OnInit {
       return `1 ${this.t('DASHBOARD_SERVICE_UNIT')} / ${amount}`;
     }
 
-    return `${row.previousConsumption ?? 0} ${row.serviceUnit ?? ''} / ${amount}`;
+    if (row.previousConsumption === null) {
+      return `- / ${amount}`;
+    }
+
+    return `${row.previousConsumption} ${row.serviceUnit ?? ''} / ${amount}`;
   }
+
 
   getChangeClass(value: number): string {
     if (value > 0) {
@@ -292,27 +305,84 @@ export class DashboardComponent implements OnInit {
     current: DashboardPeriod,
     previous: DashboardPeriod | null
   ): ServiceComparisonRow[] {
-    return current.bills.map((bill) => {
-      const previousBill = previous?.bills.find((item) => item.serviceId === bill.serviceId);
+    const currentGroups = this.groupBillsByLogicalService(current.bills);
+    const previousGroups = previous ? this.groupBillsByLogicalService(previous.bills) : new Map();
 
-      const amount = Number(bill.amount || 0);
-      const previousAmount = Number(previousBill?.amount || 0);
+    return Array.from(currentGroups.values()).map((group) => {
+      const previousGroup = previousGroups.get(group.key);
+
+      const amount = this.sumBills(group.bills);
+      const previousAmount = previousGroup ? this.sumBills(previousGroup.bills) : 0;
       const difference = amount - previousAmount;
 
       return {
+        key: group.key,
+        serviceId: group.serviceId,
+        serviceName: group.serviceName,
+        serviceUnit: group.serviceUnit,
+        billingType: group.billingType,
+        amount,
+        consumption: this.sumConsumption(group.bills),
+        previousAmount,
+        previousConsumption: previousGroup ? this.sumConsumption(previousGroup.bills) : null,
+        difference,
+        percentDifference: previousAmount > 0 ? (difference / previousAmount) * 100 : null,
+        bills: group.bills,
+        previousBills: previousGroup?.bills ?? [],
+        isRegisterGroup: group.isRegisterGroup
+      };
+    });
+  }
+
+  private groupBillsByLogicalService(bills: Bill[]) {
+    const groups = new Map<string, {
+      key: string;
+      serviceId: number;
+      serviceName: string;
+      serviceUnit?: string | null;
+      billingType: Bill['billingType'];
+      isRegisterGroup: boolean;
+      bills: Bill[];
+    }>();
+
+    bills.forEach((bill) => {
+      const isRegister = bill.meterType === 'REGISTER' && bill.parentMeterId !== null;
+
+      const key = isRegister
+        ? `parent-${bill.parentMeterId}`
+        : `service-${bill.serviceId}-meter-${bill.meterId ?? bill.id}`;
+
+      const group = groups.get(key) ?? {
+        key,
         serviceId: bill.serviceId,
         serviceName: bill.serviceName,
         serviceUnit: bill.serviceUnit,
         billingType: bill.billingType,
-        amount,
-        consumption: bill.billingType === 'METERED' ? Number(bill.consumption || 0) : null,
-        previousAmount,
-        previousConsumption:
-          previousBill?.billingType === 'METERED' ? Number(previousBill.consumption || 0) : null,
-        difference,
-        percentDifference: previousAmount > 0 ? (difference / previousAmount) * 100 : null
+        isRegisterGroup: isRegister,
+        bills: []
       };
+
+      group.bills.push(bill);
+      groups.set(key, group);
     });
+
+    return groups;
+  }
+
+  private sumConsumption(bills: Bill[]): number | null {
+    const meteredBills = bills.filter((bill) => bill.billingType === 'METERED');
+
+    if (meteredBills.length === 0) {
+      return null;
+    }
+
+    const units = new Set(meteredBills.map((bill) => bill.serviceUnit ?? ''));
+
+    if (units.size > 1) {
+      return null;
+    }
+
+    return meteredBills.reduce((sum, bill) => sum + Number(bill.consumption || 0), 0);
   }
 
   private buildCharts() {
@@ -351,7 +421,7 @@ export class DashboardComponent implements OnInit {
 
   private buildConsumptionChartData(): ChartConfiguration<'bar'>['data'] {
     const meteredRows = this.details.filter(
-      (row) => row.billingType === 'METERED' && row.serviceUnit
+      (row) => row.billingType === 'METERED' && row.serviceUnit && row.consumption !== null
     );
 
     const units = Array.from(new Set(meteredRows.map((row) => row.serviceUnit ?? '')));
@@ -360,13 +430,14 @@ export class DashboardComponent implements OnInit {
     return {
       labels: meteredRows.map((row) => row.serviceName),
       datasets: units.map((unit, index) => ({
-        data: meteredRows.map((row) => (row.serviceUnit === unit ? row.consumption ?? 0 : 0)),
+        data: meteredRows.map((row) => row.serviceUnit === unit ? row.consumption ?? 0 : 0),
         label: unit,
         backgroundColor: colors[index % colors.length],
         borderRadius: 8
       }))
     };
   }
+
 
   private sumBills(bills: Bill[]): number {
     return bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0);

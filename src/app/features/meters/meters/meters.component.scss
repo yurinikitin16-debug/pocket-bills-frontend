@@ -260,6 +260,83 @@
   }
 }
 
+.meter-item.group {
+  background: #f8fbff;
+}
+
+.register-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: -4px 0 8px 46px;
+  padding-left: 18px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.meter-item.register {
+  background: #ffffff;
+}
+
+.meter-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.type-badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 700;
+
+  &.soft {
+    background: #f3f4f6;
+    color: #64748b;
+  }
+}
+
+.zone-section {
+  grid-template-columns: 1fr;
+
+  > mat-form-field {
+    max-width: 320px;
+  }
+}
+
+.zone-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.6fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.zone-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  strong {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .register-list {
+    margin-left: 18px;
+    padding-left: 14px;
+  }
+
+  .zone-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+
 @media (max-width: 900px) {
   .form-card {
     max-width: 100%;

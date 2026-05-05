@@ -150,6 +150,51 @@
   font-weight: 600;
 }
 
+.reading-group-card {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.reading-group-card.register-group {
+  background: #f8fbff;
+}
+
+.reading-group-header {
+  margin-bottom: 14px;
+}
+
+.reading-group-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.reading-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reading-group-card .reading-item {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.reading-group-card .reading-item.register {
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.reading-group-card .reading-item.register + .reading-item.register {
+  margin-top: 0;
+}
+
 @media (max-width: 768px) {
   .period-card.compact {
     max-width: 100%;

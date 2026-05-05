@@ -1,22 +1,22 @@
-import { CommonModule } from '@angular/common';
+import {CommonModule} from '@angular/common';
 import {Component, inject, OnInit} from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { getServiceIcon } from '../../../core/util/service-icon.util';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
+import {HttpErrorResponse} from '@angular/common/http';
+import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {getServiceIcon} from '../../../core/util/service-icon.util';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCardModule} from '@angular/material/card';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSelectModule} from '@angular/material/select';
 
-import { MetersService } from '../../../core/services/meters.service';
-import { UtilityServicesService } from '../../../core/services/utility-services.service';
+import {MetersService} from '../../../core/services/meters.service';
+import {UtilityServicesService} from '../../../core/services/utility-services.service';
 import {Meter, MeterTariff} from '../../../core/models/meter.model';
-import { UtilityService } from '../../../core/models/service.model';
-import { TranslationService } from '../../../core/i18n/translation.service';
+import {UtilityService} from '../../../core/models/service.model';
+import {TranslationService} from '../../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-meters',
@@ -37,24 +37,20 @@ import { TranslationService } from '../../../core/i18n/translation.service';
   styleUrl: './meters.component.scss'
 })
 export class MetersComponent implements OnInit {
-  private metersApi = inject(MetersService);
-  private servicesApi = inject(UtilityServicesService);
-  private fb = inject(FormBuilder);
-  private translation = inject(TranslationService);
   readonly getServiceIcon = getServiceIcon;
   currentTariffs: Record<number, number> = {};
-
-  t = this.translation.translate.bind(this.translation);
-
   meters: Meter[] = [];
   services: UtilityService[] = [];
   selectedMeter: Meter | null = null;
-
   loading = true;
   saving = false;
   deletingId: number | null = null;
   errorMessage = '';
-
+  tariffs: MeterTariff[] = [];
+  periodOptions = this.buildPeriodOptions();
+  private metersApi = inject(MetersService);
+  private servicesApi = inject(UtilityServicesService);
+  private fb = inject(FormBuilder);
   form = this.fb.nonNullable.group({
     serviceId: [0, [Validators.required, Validators.min(1)]],
 
@@ -64,71 +60,27 @@ export class MetersComponent implements OnInit {
     initialReadingValue: [null as number | null],
     initialReadingPeriod: [this.getCurrentPeriodKey()],
 
-    isActive: [true, [Validators.required]]
+    isActive: [true, [Validators.required]],
+
+    isMultiZone: [false],
+
+    dayRate: [null as number | null],
+    dayInitialReadingValue: [null as number | null],
+
+    nightRate: [null as number | null],
+    nightInitialReadingValue: [null as number | null]
   });
 
   initialReadingForm = this.fb.nonNullable.group({
     value: [null as number | null, [Validators.required, Validators.min(0)]],
     period: [this.getCurrentPeriodKey(), [Validators.required]]
   });
-
-  tariffs: MeterTariff[] = [];
-
-  periodOptions = this.buildPeriodOptions();
-
-  private getCurrentPeriodKey(): string {
-    const now = new Date();
-    return `${now.getFullYear()}-${now.getMonth() + 1}`;
-  }
-
-  private buildPeriodOptions() {
-    const now = new Date();
-    const options = [];
-
-    for (let i = -24; i <= 1; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      const month = date.getMonth() + 1;
-      const year = date.getFullYear();
-
-      options.push({
-        label: `${this.getMonthName(month)} ${year}`,
-        value: `${year}-${month}`,
-        month,
-        year
-      });
-    }
-
-    return options.reverse();
-  }
-
-  private getMonthName(month: number): string {
-    const months: Record<number, string> = {
-      1: 'Січень',
-      2: 'Лютий',
-      3: 'Березень',
-      4: 'Квітень',
-      5: 'Травень',
-      6: 'Червень',
-      7: 'Липень',
-      8: 'Серпень',
-      9: 'Вересень',
-      10: 'Жовтень',
-      11: 'Листопад',
-      12: 'Грудень'
-    };
-
-    return months[month];
-  }
-
-  private parsePeriod(value: string) {
-    const [year, month] = value.split('-').map(Number);
-    return { year, month };
-  }
-
   tariffForm = this.fb.nonNullable.group({
     rate: [null as number | null, [Validators.required, Validators.min(0.01)]],
     establishedDate: ['']
   });
+  private translation = inject(TranslationService);
+  t = this.translation.translate.bind(this.translation);
 
   ngOnInit() {
     this.loadPageData();
@@ -167,7 +119,10 @@ export class MetersComponent implements OnInit {
   loadCurrentTariffs(meters: Meter[]) {
     this.currentTariffs = {};
 
-    meters.forEach((meter) => {
+    const billableMeters = this.getFlattenedBillableMeters(meters)
+      .filter((meter) => meter.meterType !== 'GROUP');
+
+    billableMeters.forEach((meter) => {
       this.metersApi.getCurrentTariff(meter.id).subscribe({
         next: (tariff) => {
           this.currentTariffs[meter.id] = tariff.rate;
@@ -191,10 +146,15 @@ export class MetersComponent implements OnInit {
 
     this.form.reset({
       serviceId: 0,
+      isMultiZone: false,
       initialRate: null,
       establishedDate: new Date().toISOString().slice(0, 10),
       initialReadingValue: null,
       initialReadingPeriod: this.getCurrentPeriodKey(),
+      dayRate: null,
+      dayInitialReadingValue: null,
+      nightRate: null,
+      nightInitialReadingValue: null,
       isActive: true
     });
   }
@@ -233,30 +193,25 @@ export class MetersComponent implements OnInit {
       return;
     }
 
+    const raw = this.form.getRawValue();
+
+    if (!this.selectedMeter && raw.isMultiZone) {
+      if (!raw.dayRate || !raw.nightRate) {
+        this.form.markAllAsTouched();
+        this.errorMessage = this.t('METER_ZONE_TARIFFS_REQUIRED');
+        return;
+      }
+    }
+
     this.saving = true;
     this.errorMessage = '';
-
-    const raw = this.form.getRawValue();
 
     const action$ = this.selectedMeter
       ? this.metersApi.update(this.selectedMeter.id, {
         serviceId: raw.serviceId,
         isActive: raw.isActive
       })
-      : this.metersApi.create({
-        serviceId: raw.serviceId,
-        initialTariff: {
-          rate: raw.initialRate!,
-          establishedDate: raw.establishedDate
-        },
-        initialReading: raw.initialReadingValue !== null
-          ? {
-            value: raw.initialReadingValue,
-            periodMonth: this.parsePeriod(raw.initialReadingPeriod).month,
-            periodYear: this.parsePeriod(raw.initialReadingPeriod).year
-          }
-          : null
-      });
+      : this.metersApi.create(this.buildCreateRequest());
 
     action$.subscribe({
       next: () => {
@@ -365,6 +320,95 @@ export class MetersComponent implements OnInit {
     });
   }
 
+  getSelectedService(): UtilityService | null {
+    const serviceId = this.form.controls.serviceId.value;
+
+    return this.services.find((service) => service.id === serviceId) ?? null;
+  }
+
+  isGroup(meter: Meter): boolean {
+    return meter.meterType === 'GROUP';
+  }
+
+  isRegister(meter: Meter): boolean {
+    return meter.meterType === 'REGISTER';
+  }
+
+  isSingle(meter: Meter): boolean {
+    return meter.meterType === 'SINGLE';
+  }
+
+  canHaveTariffs(meter: Meter | null): boolean {
+    return !!meter && meter.meterType !== 'GROUP';
+  }
+
+  getMeterTitle(meter: Meter): string {
+    if (meter.meterType === 'REGISTER') {
+      return meter.displayName || meter.registerCode || meter.serviceName;
+    }
+
+    return meter.displayName || meter.serviceName;
+  }
+
+  getFlattenedBillableMeters(meters: Meter[]): Meter[] {
+    return meters.flatMap((meter) => {
+      if (meter.meterType === 'GROUP') {
+        return meter.children;
+      }
+
+      return [meter];
+    });
+  }
+
+  private getCurrentPeriodKey(): string {
+    const now = new Date();
+    return `${now.getFullYear()}-${now.getMonth() + 1}`;
+  }
+
+  private buildPeriodOptions() {
+    const now = new Date();
+    const options = [];
+
+    for (let i = -24; i <= 1; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+
+      options.push({
+        label: `${this.getMonthName(month)} ${year}`,
+        value: `${year}-${month}`,
+        month,
+        year
+      });
+    }
+
+    return options.reverse();
+  }
+
+  private getMonthName(month: number): string {
+    const months: Record<number, string> = {
+      1: 'Січень',
+      2: 'Лютий',
+      3: 'Березень',
+      4: 'Квітень',
+      5: 'Травень',
+      6: 'Червень',
+      7: 'Липень',
+      8: 'Серпень',
+      9: 'Вересень',
+      10: 'Жовтень',
+      11: 'Листопад',
+      12: 'Грудень'
+    };
+
+    return months[month];
+  }
+
+  private parsePeriod(value: string) {
+    const [year, month] = value.split('-').map(Number);
+    return {year, month};
+  }
+
   private resolveError(error: HttpErrorResponse, fallbackCode: string): string {
     if (error.status === 0) {
       return this.translation.error('SERVER_UNAVAILABLE');
@@ -372,4 +416,64 @@ export class MetersComponent implements OnInit {
 
     return this.translation.error(error.error?.errorCode || fallbackCode);
   }
+
+  private buildInitialReading(value: number | null) {
+    if (value === null) {
+      return null;
+    }
+
+    const period = this.parsePeriod(this.form.controls.initialReadingPeriod.value);
+
+    return {
+      value,
+      periodMonth: period.month,
+      periodYear: period.year
+    };
+  }
+
+  private buildCreateRequest() {
+    const raw = this.form.getRawValue();
+    const selectedService = this.getSelectedService();
+    const displayName = selectedService?.name ?? null;
+
+    if (raw.isMultiZone) {
+      return {
+        serviceId: raw.serviceId,
+        meterType: 'MULTI_ZONE' as const,
+        displayName,
+        zones: [
+          {
+            code: 'DAY',
+            name: this.t('METER_ZONE_DAY'),
+            initialTariff: {
+              rate: raw.dayRate!,
+              establishedDate: raw.establishedDate
+            },
+            initialReading: this.buildInitialReading(raw.dayInitialReadingValue)
+          },
+          {
+            code: 'NIGHT',
+            name: this.t('METER_ZONE_NIGHT'),
+            initialTariff: {
+              rate: raw.nightRate!,
+              establishedDate: raw.establishedDate
+            },
+            initialReading: this.buildInitialReading(raw.nightInitialReadingValue)
+          }
+        ]
+      };
+    }
+
+    return {
+      serviceId: raw.serviceId,
+      meterType: 'SINGLE' as const,
+      displayName,
+      initialTariff: {
+        rate: raw.initialRate!,
+        establishedDate: raw.establishedDate
+      },
+      initialReading: this.buildInitialReading(raw.initialReadingValue)
+    };
+  }
+
 }

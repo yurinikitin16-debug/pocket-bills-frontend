@@ -83,37 +83,69 @@
 
               @if (isExpanded(group)) {
                 <div class="bill-list">
-                  @for (bill of getVisibleBills(group); track bill.id) {
-                    <div class="bill-row">
-                      <div class="bill-service">
-                        <span class="service-icon" [class.fixed]="bill.billingType === 'FIXED'">
-                          <mat-icon>
-                            {{ getServiceIcon({
-                                                      serviceName: bill.serviceName,
-                                                      billingType: bill.billingType}) }}
-                          </mat-icon>
-                        </span>
+                  @for (billGroup of getGroupedVisibleBills(group); track billGroup.key) {
+                    @if (billGroup.isRegisterGroup) {
+                      <div class="bill-register-group">
+                        <div class="bill-register-header">
+                          <div class="bill-service">
+            <span class="service-icon">
+              <mat-icon>
+                {{ getServiceIcon({ serviceName: billGroup.title, billingType: billGroup.billingType }) }}
+              </mat-icon>
+            </span>
 
-                        <div>
-                          <strong>{{ bill.serviceName }}</strong>
+                            <div>
+                              <strong>{{ billGroup.title }}</strong>
+                              <p>{{ t('METER_MULTI_ZONE') }}</p>
+                            </div>
+                          </div>
 
-                          @if (bill.billingType === 'METERED') {
-                            <p>
-                              {{ bill.consumption ?? 0 }} {{ bill.serviceUnit }}
-                              · {{ bill.tariffRate }} {{ t('CURRENCY_UAH') }}
-                            </p>
-                          } @else if (bill.billingType === 'FIXED') {
-                            <p>
-                              {{ t('BILL_FIXED_TARIFF') }} · {{ bill.tariffRate }} {{ t('CURRENCY_UAH') }}
-                            </p>
+                          <strong class="bill-register-total">{{ formatAmount(billGroup.total) }}</strong>
+                        </div>
+
+                        <div class="bill-register-list">
+                          @for (bill of billGroup.bills; track bill.id) {
+                            <div class="bill-row register">
+                              <div class="bill-service">
+                <span class="service-icon small">
+                  <mat-icon>
+                    {{ bill.registerCode === 'NIGHT' ? 'dark_mode' : 'wb_sunny' }}
+                  </mat-icon>
+                </span>
+
+                                <div>
+                                  <strong>{{ getBillDisplayName(bill) }}</strong>
+                                  <p>{{ getBillDescription(bill) }}</p>
+                                </div>
+                              </div>
+
+                              <strong class="bill-amount">{{ formatAmount(bill.amount) }}</strong>
+                            </div>
                           }
                         </div>
                       </div>
+                    } @else {
+                      @let bill = billGroup.bills[0];
 
-                      <strong class="bill-amount">{{ formatAmount(bill.amount) }}</strong>
-                    </div>
+                      <div class="bill-row">
+                        <div class="bill-service">
+                            <span class="service-icon" [class.fixed]="bill.billingType === 'FIXED'">
+                              <mat-icon>
+                                {{ getServiceIcon({ serviceName: bill.serviceName, billingType: bill.billingType }) }}
+                              </mat-icon>
+                            </span>
+                          <div>
+                            <strong>{{ getBillDisplayName(bill) }}</strong>
+                            <p>{{ getBillDescription(bill) }}</p>
+                          </div>
+                        </div>
+
+                        <strong class="bill-amount">{{ formatAmount(bill.amount) }}</strong>
+                      </div>
+                    }
                   }
                 </div>
+
               }
             </div>
           }

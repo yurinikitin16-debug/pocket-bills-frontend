@@ -20,6 +20,14 @@ import {
 import { MatOption } from '@angular/material/core';
 import { MatSelect } from '@angular/material/select';
 
+interface ReadingGroup {
+  key: string;
+  title: string;
+  serviceName: string;
+  billingType: 'METERED' | 'FIXED';
+  items: ReadingFormMeter[];
+}
+
 @Component({
   selector: 'app-readings',
   standalone: true,
@@ -236,7 +244,11 @@ export class ReadingsComponent implements OnInit {
 
     const readings = this.readingsArray
       .getRawValue()
-      .filter((reading, index) => this.meters[index]?.billingType === 'METERED')
+      .filter((reading, index) => {
+        const meter = this.meters[index];
+
+        return meter?.billingType === 'METERED' && meter?.meterType !== 'GROUP';
+      })
       .filter((reading) => reading.value !== null || reading.consumption !== null)
       .map((reading) => ({
         meterId: reading.meterId,
@@ -299,5 +311,48 @@ export class ReadingsComponent implements OnInit {
     }
 
     this.loadData();
+  }
+
+  getReadingGroups(): ReadingGroup[] {
+    const groups = new Map<string, ReadingGroup>();
+
+    this.meters.forEach((meter) => {
+      const key = meter.parentMeterId !== null
+        ? `parent-${meter.parentMeterId}`
+        : `meter-${meter.meterId}`;
+
+      const title = meter.parentMeterId !== null
+        ? meter.serviceName
+        : meter.displayName || meter.serviceName;
+
+      const group = groups.get(key) ?? {
+        key,
+        title,
+        serviceName: meter.serviceName,
+        billingType: meter.billingType,
+        items: []
+      };
+
+      group.items.push(meter);
+      groups.set(key, group);
+    });
+
+    return Array.from(groups.values());
+  }
+
+  getReadingItemTitle(meter: ReadingFormMeter): string {
+    if (meter.meterType === 'REGISTER') {
+      return meter.displayName || meter.registerCode || meter.serviceName;
+    }
+
+    return meter.displayName || meter.serviceName;
+  }
+
+  getReadingIndex(meter: ReadingFormMeter): number {
+    return this.meters.findIndex((item) => item.meterId === meter.meterId);
+  }
+
+  isRegisterGroup(group: ReadingGroup): boolean {
+    return group.items.some((item) => item.meterType === 'REGISTER');
   }
 }

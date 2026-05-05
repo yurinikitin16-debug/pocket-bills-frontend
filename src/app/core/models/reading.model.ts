@@ -1,18 +1,23 @@
 import { Bill } from './bill.model';
 
+export type BillingType = 'METERED' | 'FIXED';
+export type MeterType = 'SINGLE' | 'GROUP' | 'REGISTER';
+
 export interface ReadingFormData {
   periodMonth: number;
   periodYear: number;
   meters: ReadingFormMeter[];
 }
 
-export type BillingType = 'METERED' | 'FIXED';
-
 export interface ReadingFormMeter {
   meterId: number;
+  parentMeterId: number | null;
   serviceId: number;
   serviceName: string;
-  serviceUnit: string;
+  serviceUnit: string | null;
+  meterType: MeterType;
+  registerCode: string | null;
+  displayName: string | null;
   billingType: BillingType;
   previousValue?: number | null;
   currentTariffRate: number;
@@ -41,9 +46,13 @@ export interface MeterReadingSubmitItem {
 export interface MeterReading {
   id: number;
   meterId: number;
+  parentMeterId: number | null;
   serviceId: number;
   serviceName: string;
-  serviceUnit: string;
+  serviceUnit: string | null;
+  meterType: MeterType;
+  registerCode: string | null;
+  displayName: string | null;
   previousValue?: number | null;
   value: number;
   consumption: number;

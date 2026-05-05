@@ -85,7 +85,6 @@
   cursor: pointer;
 }
 
-
 .period-title {
   display: flex;
   align-items: center;
@@ -115,8 +114,6 @@
   }
 }
 
-
-
 .period-total {
   display: flex;
   align-items: center;
@@ -126,6 +123,21 @@
   mat-icon {
     color: #64748b;
   }
+}
+
+.amount-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .bill-list {
@@ -181,19 +193,15 @@
   }
 }
 
-.amount-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: #eef2ff;
-  color: #3730a3;
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1;
-  white-space: nowrap;
+.service-icon.small {
+  width: 24px;
+  height: 24px;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
 }
 
 .bill-amount {
@@ -201,6 +209,56 @@
   font-size: 15px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.bill-register-group {
+  padding: 16px 0;
+  border-top: 1px solid #eef2f7;
+}
+
+.bill-register-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 10px;
+
+  .bill-service {
+    align-items: center;
+  }
+
+  .bill-amount {
+    justify-self: end;
+  }
+}
+
+.bill-register-total {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.bill-register-list {
+  margin-left: 42px;
+  padding-left: 18px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.bill-row.register {
+  border-top: 1px solid #eef2f7;
+  padding: 12px 0;
+
+  &:first-child {
+    border-top: 0;
+  }
 }
 
 @media (max-width: 768px) {
@@ -217,7 +275,6 @@
   }
 
   .period-summary {
-    display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
     padding: 18px 20px;
@@ -270,6 +327,22 @@
   }
 
   .bill-row > .bill-amount {
-    margin-left: 46px;
+    margin-left: 42px;
+  }
+
+  .bill-register-header {
+    grid-template-columns: 1fr;
+    gap: 8px;
+
+    .bill-amount,
+    .bill-register-total {
+      justify-self: start;
+      margin-left: 42px;
+    }
+  }
+
+  .bill-register-list {
+    margin-left: 16px;
+    padding-left: 12px;
   }
 }

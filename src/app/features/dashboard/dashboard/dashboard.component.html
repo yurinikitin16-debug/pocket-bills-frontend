@@ -37,11 +37,6 @@
       </div>
 
       <div>
-        <span>{{ t('DASHBOARD_CURRENT_PERIOD') }}</span>
-        <strong>{{ formatAmount(currentPeriod.total) }}</strong>
-      </div>
-
-      <div>
         <span>{{ t('DASHBOARD_PREVIOUS_PERIOD') }}</span>
         <strong>{{ formatAmount(previousPeriod?.total ?? 0) }}</strong>
       </div>
@@ -70,7 +65,7 @@
           <span>{{ t('DASHBOARD_DIFFERENCE') }}</span>
         </div>
 
-        @for (row of details; track row.serviceId) {
+        @for (row of details; track row.key) {
           <div class="details-row">
             <div class="entity-main">
               <span class="entity-icon" [class.fixed]="row.billingType === 'FIXED'">
@@ -79,7 +74,14 @@
                 </mat-icon>
               </span>
 
-              <strong>{{ row.serviceName }}</strong>
+              <div>
+                <strong>{{ row.serviceName }}</strong>
+
+                @if (row.isRegisterGroup) {
+                  <p>{{ t('METER_MULTI_ZONE') }}</p>
+                }
+              </div>
+
             </div>
 
             <span>{{ formatConsumption(row) }}</span>
@@ -100,7 +102,7 @@
       <h2>{{ t('DASHBOARD_PREVIOUS_PERIOD') }}</h2>
 
       <div class="comparison-grid">
-        @for (row of details; track row.serviceId) {
+        @for (row of details; track row.key) {
           <div class="comparison-item">
             <span>{{ row.serviceName }}</span>
 

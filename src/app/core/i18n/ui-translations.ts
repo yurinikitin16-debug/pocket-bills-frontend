@@ -564,5 +564,41 @@ export const UI_TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
   MONTH_SHORT_DECEMBER: {
     EN: 'Dec',
     UK: 'Гру'
+  },
+  METER_MULTI_ZONE: {
+    EN: 'Two-zone / multi-zone meter',
+    UK: 'Двозонний / багатозонний лічильник'
+  },
+  METER_ZONE_DAY: {
+    EN: 'Day',
+    UK: 'День'
+  },
+  METER_ZONE_NIGHT: {
+    EN: 'Night',
+    UK: 'Ніч'
+  },
+  METER_ZONE_DAY_TARIFF: {
+    EN: 'Day tariff',
+    UK: 'Денний тариф'
+  },
+  METER_ZONE_NIGHT_TARIFF: {
+    EN: 'Night tariff',
+    UK: 'Нічний тариф'
+  },
+  METER_ZONE_TARIFFS_REQUIRED: {
+    EN: 'Tariffs are required for all zones',
+    UK: 'Тарифи обовʼязкові для всіх зон'
+  },
+  METER_REGISTER: {
+    EN: 'Register',
+    UK: 'Зона'
+  },
+  METER_GROUP: {
+    EN: 'Group',
+    UK: 'Група'
+  },
+  METER_SINGLE: {
+    EN: 'Single',
+    UK: 'Звичайний'
   }
 };

@@ -16,10 +16,6 @@ export class UtilityServicesService {
     return this.http.get<UtilityService[]>(this.apiUrl);
   }
 
-  getById(id: number) {
-    return this.http.get<UtilityService>(`${this.apiUrl}/${id}`);
-  }
-
   create(request: ServiceCreateRequest) {
     return this.http.post<UtilityService>(this.apiUrl, request);
   }

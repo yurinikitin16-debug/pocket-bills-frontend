@@ -15,8 +15,6 @@
   }
 
   <div class="content-grid">
-
-    <!-- LEFT: LIST -->
     <mat-card class="list-card">
       <h2>{{ t('METER_LIST') }}</h2>
 
@@ -29,47 +27,96 @@
       } @else {
         <div class="meter-list">
           @for (meter of meters; track meter.id) {
-            <div class="meter-item" [class.inactive]="!meter.isActive">
+            <div class="meter-item" [class.inactive]="!meter.isActive" [class.group]="isGroup(meter)">
               <div class="entity-main">
-                <span class="entity-icon">
+                <span class="entity-icon" [class.fixed]="meter.billingType === 'FIXED'">
                   <mat-icon>
-                    {{ getServiceIcon({ serviceName: meter.serviceName }) }}
+                    {{ getServiceIcon({ serviceName: meter.serviceName, billingType: meter.billingType }) }}
                   </mat-icon>
                 </span>
-                <div>
-                  <strong>{{ meter.serviceName }}</strong>
 
-                  <span class="status" [class.active]="meter.isActive">
-      {{ meter.isActive ? t('STATUS_ACTIVE') : t('STATUS_DISABLED') }}
-    </span>
+                <div>
+                  <strong>{{ getMeterTitle(meter) }}</strong>
+
+                  <div class="meter-meta">
+                    @if (isGroup(meter)) {
+                      <span class="type-badge">{{ t('METER_GROUP') }}</span>
+                    }
+
+                    @if (isSingle(meter)) {
+                      <span class="type-badge">{{ t('METER_SINGLE') }}</span>
+                    }
+
+                    <span class="status" [class.active]="meter.isActive">
+                      {{ meter.isActive ? t('STATUS_ACTIVE') : t('STATUS_DISABLED') }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               <div class="item-actions">
-                <button mat-icon-button (click)="startEdit(meter)">
+                <button mat-icon-button type="button" (click)="startEdit(meter)">
                   <mat-icon>edit</mat-icon>
                 </button>
 
-                <button mat-icon-button class="danger" (click)="delete(meter)">
+                <button mat-icon-button type="button" class="danger" (click)="delete(meter)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
             </div>
+
+            @if (isGroup(meter) && meter.children.length > 0) {
+              <div class="register-list">
+                @for (child of meter.children; track child.id) {
+                  <div class="meter-item register" [class.inactive]="!child.isActive">
+                    <div class="entity-main">
+                      <span class="entity-icon">
+                        <mat-icon>
+                          {{ getServiceIcon({ serviceName: child.serviceName, billingType: child.billingType }) }}
+                        </mat-icon>
+                      </span>
+
+                      <div>
+                        <strong>{{ getMeterTitle(child) }}</strong>
+
+                        <div class="meter-meta">
+                          <span class="type-badge">{{ t('METER_REGISTER') }}</span>
+
+                          @if (child.registerCode) {
+                            <span class="type-badge soft">{{ child.registerCode }}</span>
+                          }
+
+                          <span class="status" [class.active]="child.isActive">
+                            {{ child.isActive ? t('STATUS_ACTIVE') : t('STATUS_DISABLED') }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="item-actions">
+                      <button mat-icon-button type="button" (click)="startEdit(child)">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+
+                      <button mat-icon-button type="button" class="danger" (click)="delete(child)">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           }
         </div>
       }
     </mat-card>
 
-    <!-- RIGHT: FORM -->
     <mat-card class="form-card">
       <h2>
         {{ selectedMeter ? t('METER_EDIT') : t('METER_CREATE') }}
       </h2>
 
-      <!-- MAIN FORM -->
       <form class="main-meter-form" [formGroup]="form" (ngSubmit)="save()">
-
-        <!-- SERVICE -->
         <mat-form-field appearance="outline">
           <mat-label>{{ t('SERVICE_NAME') }}</mat-label>
 
@@ -89,8 +136,13 @@
           </mat-select>
         </mat-form-field>
 
-        <!-- INITIAL TARIFF (only create) -->
         @if (!selectedMeter) {
+          <mat-checkbox formControlName="isMultiZone">
+            {{ t('METER_MULTI_ZONE') }}
+          </mat-checkbox>
+        }
+
+        @if (!selectedMeter && !form.controls.isMultiZone.value) {
           <div class="form-section">
             <h3>{{ t('TARIFF_INITIAL') }}</h3>
 
@@ -106,8 +158,58 @@
           </div>
         }
 
-        <!-- INITIAL READING (optional on create) -->
-        @if (!selectedMeter) {
+        @if (!selectedMeter && form.controls.isMultiZone.value) {
+          <div class="form-section zone-section">
+            <h3>{{ t('METER_MULTI_ZONE') }}</h3>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ t('DATE') }}</mat-label>
+              <input matInput type="date" formControlName="establishedDate">
+            </mat-form-field>
+
+            <div class="zone-row">
+              <div class="zone-title">
+                <span class="entity-icon">
+                  <mat-icon>wb_sunny</mat-icon>
+                </span>
+
+                <strong>{{ t('METER_ZONE_DAY') }}</strong>
+              </div>
+
+              <mat-form-field appearance="outline">
+                <mat-label>{{ t('METER_ZONE_DAY_TARIFF') }}</mat-label>
+                <input matInput type="number" formControlName="dayRate">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>{{ t('INITIAL_READING_VALUE') }}</mat-label>
+                <input matInput type="number" formControlName="dayInitialReadingValue">
+              </mat-form-field>
+            </div>
+
+            <div class="zone-row">
+              <div class="zone-title">
+                <span class="entity-icon">
+                  <mat-icon>dark_mode</mat-icon>
+                </span>
+
+                <strong>{{ t('METER_ZONE_NIGHT') }}</strong>
+              </div>
+
+              <mat-form-field appearance="outline">
+                <mat-label>{{ t('METER_ZONE_NIGHT_TARIFF') }}</mat-label>
+                <input matInput type="number" formControlName="nightRate">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>{{ t('INITIAL_READING_VALUE') }}</mat-label>
+                <input matInput type="number" formControlName="nightInitialReadingValue">
+              </mat-form-field>
+            </div>
+          </div>
+        }
+
+        @if (!selectedMeter && !form.controls.isMultiZone.value) {
           <div class="form-section">
             <h3>{{ t('INITIAL_READING_OPTIONAL') }}</h3>
 
@@ -130,14 +232,12 @@
           </div>
         }
 
-        <!-- ACTIVE -->
         @if (selectedMeter) {
           <mat-checkbox formControlName="isActive">
             {{ t('METER_ACTIVE') }}
           </mat-checkbox>
         }
 
-        <!-- ACTIONS -->
         <div class="form-actions">
           @if (selectedMeter) {
             <button mat-button type="button" (click)="startCreate()">
@@ -151,8 +251,7 @@
         </div>
       </form>
 
-      <!-- TARIFF HISTORY -->
-      @if (selectedMeter) {
+      @if (canHaveTariffs(selectedMeter)) {
         <div class="tariff-section">
           <h3>{{ t('TARIFF_HISTORY') }}</h3>
 
@@ -164,7 +263,10 @@
                 <div class="tariff-item" [class.active]="tariff.active">
                   <div>
                     <strong>
-                      {{ tariff.rate }} / {{ tariff.serviceUnit }}
+                      {{ tariff.rate }}
+                      @if (tariff.serviceUnit) {
+                        / {{ tariff.serviceUnit }}
+                      }
                     </strong>
 
                     <p>
@@ -185,7 +287,6 @@
             </div>
           }
 
-          <!-- ADD TARIFF -->
           <form class="tariff-form" [formGroup]="tariffForm" (ngSubmit)="addTariff()">
             <mat-form-field appearance="outline">
               <mat-label>{{ t('TARIFF_RATE') }}</mat-label>
@@ -204,8 +305,7 @@
         </div>
       }
 
-      <!-- INITIAL READING (separate endpoint) -->
-      @if (selectedMeter) {
+      @if (canHaveTariffs(selectedMeter)) {
         <div class="initial-reading-section">
           <h3>{{ t('INITIAL_READING') }}</h3>
 
@@ -241,7 +341,6 @@
           </form>
         </div>
       }
-
     </mat-card>
   </div>
 </section>

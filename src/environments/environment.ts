@@ -1,3 +1,3 @@
 export const environment = {
-  apiBaseUrl: 'https://pocket-bills-api.onrender.com/api'
+  apiBaseUrl: 'http://localhost:3000/api',
 };
